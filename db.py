@@ -31,8 +31,8 @@ def init_db(conn: sqlite3.Connection):
 def add_application(conn: sqlite3.Connection, app: Application) -> Application:
     cursor = conn.execute(
         """INSERT INTO applications 
-        (company, role, status, source, link, date_applied, created_at, updated_at, archived),
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"""
+        (company, role, status, source, link, date_applied, created_at, updated_at, archived)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
         (app.company, app.role, app.status.value, app.source, app.link, app.date_applied.isoformat(), app.created_at.isoformat(),
         app.updated_at.isoformat(), app.archived)
     )
