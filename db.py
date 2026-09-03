@@ -84,4 +84,23 @@ def archive_application(conn: sqlite3.Connection, application_id: int):
     conn.commit()
     row = conn.execute("SELECT * FROM applications WHERE id = ?", (application_id,)).fetchone()
     return _row_to_application(row)
-    
+
+def filter_applications(conn: sqlite3.Connection, status: Status | None = None, company: str |  None = None) -> list[Application]:
+    conditions = []
+    params = []
+
+    if status is not None:
+        conditions.append("status = ?")
+        params.append(status.value)
+
+    if company is not None:
+        conditions.append("company = ?")
+        params.append(company)
+
+    query = "SELECT * FROM applications"
+    if conditions:
+        query += " WHERE " + " AND ".join(conditions)
+    query += " ORDER BY updated_at DESC"
+
+    rows = conn.execute(query, params).fetchall()
+    return [_row_to_application(row) for row in rows]
