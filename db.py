@@ -57,3 +57,31 @@ def _row_to_application(row: sqlite3.Row) -> Application:
         updated_at=datetime.fromisoformat(row["updated_at"]),
         archived=bool(row["archived"])
         )
+
+def update_status(conn: sqlite3.Connection, application_id: int, new_status: Status) -> Application:
+    conn.execute(
+        """
+        UPDATE applications
+        SET updated_at = ?,
+        status = ?
+        WHERE id = ? """,
+        (new_status.value, datetime.now().isoformat(), application_id)
+
+    )
+    conn.commit()
+    row = conn.execute("SELECT * FROM applications WHERE id = ?", (application_id,)).fetchone()
+    return _row_to_application(row)
+
+def archive_application(conn: sqlite3.Connection, application_id: int):
+    conn.execute(
+        """
+        UPDATE applications
+        SET archived = 1, 
+        updated_at = ?,
+        where id = ? """,
+        (datetime.now().isoformat(), application_id)
+    )
+    conn.commit()
+    row = conn.execute("SELECT * FROM applications WHERE id = ?", (application_id,)).fetchone()
+    return _row_to_application(row)
+    
