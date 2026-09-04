@@ -65,7 +65,7 @@ def update_status(conn: sqlite3.Connection, application_id: int, new_status: Sta
         SET updated_at = ?,
         status = ?
         WHERE id = ? """,
-        (new_status.value, datetime.now().isoformat(), application_id)
+        ( datetime.now().isoformat(),new_status.value, application_id)
 
     )
     conn.commit()
@@ -77,13 +77,15 @@ def archive_application(conn: sqlite3.Connection, application_id: int):
         """
         UPDATE applications
         SET archived = 1, 
-        updated_at = ?,
-        where id = ? """,
+        updated_at = ?
+        WHERE id =  ? """,
         (datetime.now().isoformat(), application_id)
     )
     conn.commit()
+
+def get_application(conn: sqlite3.Connection, application_id: int) -> Application | None:
     row = conn.execute("SELECT * FROM applications WHERE id = ?", (application_id,)).fetchone()
-    return _row_to_application(row)
+    return _row_to_application(row) if row else None
 
 def filter_applications(conn: sqlite3.Connection, status: Status | None = None, company: str |  None = None) -> list[Application]:
     conditions = []

@@ -2,7 +2,7 @@ import typer
 from rich.console import Console
 from rich.table import Table
 
-from db import get_connection, init_db, add_application, list_applications, update_status, archive_application, filter_applications
+from db import get_connection, init_db, add_application, list_applications, update_status, archive_application, filter_applications, get_application    
 from models import Application, Status
 from datetime import date
 
@@ -51,7 +51,7 @@ def list_apps():
 
 @app.command(name="update")
 def update(
-    application_id = typer.Argument(..., help = "The ID of the application to update"),
+    application_id: int = typer.Argument(..., help = "The ID of the application to update"),
     new_status: Status = typer.Option(..., "--status", help="The new status for the application")
 ):
     conn =get_connection()
@@ -64,13 +64,13 @@ def update(
 def archive(application_id: int):
     conn = get_connection()
     init_db(conn)
-    existing_app = conn.execute("SELECT * FROM applications WHERE id = ?", (application_id,)).fetchone()
+    existing_app = get_application(conn, application_id)
     if existing_app is None:
         console.print(f"No application found with ID: {application_id}")
         conn.close()
         raise typer.Exit(code=1)
-    archived_app = archive_application(conn, application_id)
-    console.print(f"Archived application: {archived_app} with ID: {archived_app.id}")
+    archive_application(conn, application_id)
+    console.print(f"Archived application: {existing_app} with ID: {existing_app.id}")
     conn.close()
 
 @app.command(name="filter")
@@ -80,7 +80,7 @@ def filter_apps(
 ):
     conn = get_connection()
     init_db(conn)
-    filter_apps = filter_applications(conn, status, company)
+    filtered = filter_applications(conn, status, company)
     table = Table(title="Filtered Applications")
     table.add_column("ID", justify="right", style="cyan", no_wrap=True)
     table.add_column("Company", style="magenta")
@@ -88,7 +88,7 @@ def filter_apps(
     table.add_column("Status", style="yellow")
     table.add_column("Date Applied", style="blue")
 
-    for a in filter_apps:
+    for a in filtered:
         table.add_row(str(a.id), a.company, a.role, a.status.value, a.date_applied.isoformat())
     console.print(table)
     conn.close()
