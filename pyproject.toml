@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pipeline-cli"
+version = "0.1.0"
+description = "A CLI job application tracker"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [{name = "S Panaligan"}]
+
+dependencies = [
+    "typer>=0.12",
+    "rich>=13.0",
+]
+
+[project.scripts]
+pipeline = "cli:app"
+
+[tool.setuptools]
+py-modules = ["cli", "db", "models"]
